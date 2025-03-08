@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 
-import { StoreProvider } from "../context/StoreContext";
-import { ProductCard } from "../components/ProductCard";
-import { Cart } from "../components/Cart";
+import { StoreProvider } from "./context/StoreContext";
+import { ProductCard } from "./components/ProductCard";
+import { Cart } from "./components/Cart";
 import { toast } from "sonner";
 
 const BIN_ID = "67b0a7d1ad19ca34f804be59";
