@@ -52,7 +52,7 @@ export const Cart = () => {
     const cartItemsList = cart
       .map(
         (item) =>
-          `- ${item.name} (x${item.quantity}) - ₦${item.price.toLocaleString()}`
+          `- ${item.name} (x${item.quantity}) - $${item.price.toLocaleString()}`
       )
       .join("\n");
 
@@ -62,7 +62,7 @@ export const Cart = () => {
       customer_phone: userDetails.phoneNumber,
       delivery_address: userDetails.address,
       message: cartItemsList,
-      subject: `New Order - ₦${cartTotal.toLocaleString()} - ${
+      subject: `New Order - $${cartTotal.toLocaleString()} - ${
         userDetails.phoneNumber
       }`,
     };
@@ -161,7 +161,7 @@ export const Cart = () => {
                         <div className="flex-1">
                           <h3 className="font-medium">{item.name}</h3>
                           <p className="text-sm text-gray-500">
-                            ₦{item.price.toLocaleString()}
+                            ${item.price.toLocaleString()}
                           </p>
                           <div className="mt-2 flex items-center space-x-2">
                             <Button
@@ -203,7 +203,7 @@ export const Cart = () => {
                   <div className="mb-4 flex justify-between">
                     <span className="font-medium">Total</span>
                     <span className="font-medium">
-                      ₦{cartTotal.toLocaleString()}
+                      ${cartTotal.toLocaleString()}
                     </span>
                   </div>
                   {paymentMethod ? (

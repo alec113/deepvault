@@ -99,7 +99,7 @@ export const ProductCard = ({ product }: { product: Product }) => {
               {product.name}
             </h3>
             <p className="text-sm text-gray-500">
-              ₦{product.price.toLocaleString()}
+              ${product.price.toLocaleString()}
             </p>
           </div>
         </div>
@@ -159,7 +159,7 @@ export const ProductCard = ({ product }: { product: Product }) => {
             </h2>
             <p className="mt-2 text-gray-500">{product.description}</p>
             <p className="mt-4 text-xl font-medium text-gray-900">
-              ₦{product.price.toLocaleString()}
+              ${product.price.toLocaleString()}
             </p>
           </div>
           <Button
