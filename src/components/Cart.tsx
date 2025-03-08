@@ -58,7 +58,7 @@ export const Cart = () => {
 
     const orderDetails = {
       payment_method: paymentMethod,
-      total_amount: `₦${cartTotal.toLocaleString()}`,
+      total_amount: `$${cartTotal.toLocaleString()}`,
       customer_phone: userDetails.phoneNumber,
       delivery_address: userDetails.address,
       message: cartItemsList,
