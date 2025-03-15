@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { toast } from "sonner";
+import { toast, Toaster } from "sonner";
 import emailjs from "@emailjs/browser";
 
 import { useStore } from "../context/StoreContext";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Plus, Minus, X, Copy } from "lucide-react";
+import { Plus, Minus, X, Copy, Edit } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
   Dialog,
@@ -20,7 +20,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
 export const Cart = () => {
-  const { cart, removeFromCart, updateQuantity, cartTotal } = useStore();
+  const { cart, removeFromCart, updateQuantity, cartTotal, clearCart } = useStore();
   const [paymentMethod, setPaymentMethod] = useState<string | null>(null);
   const [bankDetails, setBankDetails] = useState({});
   const [btcAddress, setBtcAddress] = useState<string>("");
@@ -30,25 +30,51 @@ export const Cart = () => {
     address: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isCartOpen, setIsCartOpen] = useState(false);
 
   const BIN_ID = "67b4ff60acd3cb34a8e75b63";
   const API_KEY =
     "$2a$10$LoUE3DG23v0idSgqUwPW2ezaM2GPu/HLJAnxJAxZeua0QbYLu54wK";
+
+  // Load user details from localStorage on component mount
+  useEffect(() => {
+    const savedDetails = localStorage.getItem("userDeliveryDetails");
+    if (savedDetails) {
+      try {
+        const parsedDetails = JSON.parse(savedDetails);
+        setUserDetails(parsedDetails);
+      } catch (error) {
+        console.error("Failed to parse saved user details:", error);
+      }
+    }
+  }, []);
+
+  // Save user details to localStorage whenever they change
+  useEffect(() => {
+    if (userDetails.phoneNumber || userDetails.address) {
+      localStorage.setItem("userDeliveryDetails", JSON.stringify(userDetails));
+    }
+  }, [userDetails]);
 
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text);
     toast.success("Copied");
   };
 
-  const handleUserDetailsSubmit = async () => {
+  const handleUserDetailsSubmit = () => {
     if (!userDetails.phoneNumber || !userDetails.address) {
       toast.error("Please fill in all fields");
       return;
     }
+    
+    // Details will be automatically saved to localStorage via the useEffect
+    toast.success("Delivery details saved");
+    setShowDetailsModal(false);
+  };
 
+  const handleOrderSubmit = async () => {
     setIsSubmitting(true);
 
-    // Format cart items for the email template
     const cartItemsList = cart
       .map(
         (item) =>
@@ -69,21 +95,27 @@ export const Cart = () => {
 
     try {
       const result = await emailjs.send(
-        "service_oc53umj", // Replace with your EmailJS service ID
-        "template_7y1sqrg", // Replace with your EmailJS template ID
+        "service_oc53umj",
+        "template_7y1sqrg", 
         orderDetails,
-        "fZbCubmPKBHtcOwoo" // Replace with your EmailJS public key
+        "fZbCubmPKBHtcOwoo" 
       );
 
       if (result.status === 200) {
-        toast.success("Order confirmed! We'll contact you shortly.");
-        setShowDetailsModal(false);
+        // Clear the cart
+        clearCart();
+        
+        // Close the cart
+        // setIsCartOpen(false);
+        
+        // Reset payment method
         setPaymentMethod(null);
-        setUserDetails({
-          phoneNumber: "",
-          address: "",
+        
+        // Show success message
+        toast.success("Order confirmed! We'll contact you shortly.", {
+          duration: 5000, // Show for 5 seconds
+          position: "top-center"
         });
-        // You might want to clear the cart here using a function from useStore
       } else {
         throw new Error("Failed to send email");
       }
@@ -110,11 +142,17 @@ export const Cart = () => {
       });
   }, []);
 
+  const hasUserDetails = userDetails.phoneNumber && userDetails.address;
+
   return (
     <>
-      <Sheet>
+    <Toaster />
+      <Sheet open={isCartOpen} onOpenChange={setIsCartOpen}>
         <SheetTrigger asChild>
-          <button className="fixed bottom-8 right-8 flex h-16 w-16 items-center justify-center rounded-full bg-gray-900 text-white shadow-lg transition-transform hover:scale-105">
+          <button 
+            className="fixed bottom-8 right-8 flex h-16 w-16 items-center justify-center rounded-full bg-gray-900 text-white shadow-lg transition-transform hover:scale-105"
+            onClick={() => setIsCartOpen(true)}
+          >
             <div className="relative">
               <svg
                 className="h-6 w-6"
@@ -199,97 +237,146 @@ export const Cart = () => {
                     ))}
                   </div>
                 </ScrollArea>
-                <div className="border-t pt-4">
-                  <div className="mb-4 flex justify-between">
+                <div className="border-t pt-4 space-y-4">
+                  <div className="flex justify-between">
                     <span className="font-medium">Total</span>
                     <span className="font-medium">
                       ${cartTotal.toLocaleString()}
                     </span>
                   </div>
-                  {paymentMethod ? (
-                    <div>
-                      {paymentMethod === "Bank Transfer" && (
-                        <div className="space-y-2">
-                          <h3 className="text-lg font-medium">Bank Details</h3>
-                          <div className="flex items-center justify-between bg-gray-100 p-2 rounded-md">
-                            <span>{bankDetails?.account_number}</span>
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              onClick={() =>
-                                handleCopy(bankDetails.account_number)
-                              }
-                            >
-                              <Copy className="h-4 w-4" />
-                            </Button>
+                  
+                  {/* User Details Section */}
+                  <div className="space-y-2">
+                    <h3 className="text-lg font-medium">Delivery Details</h3>
+                    {hasUserDetails ? (
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between bg-gray-100 p-2 rounded-md">
+                          <div className="overflow-hidden">
+                            <span className="text-sm font-medium">Phone:</span>
+                            <p className="truncate">{userDetails.phoneNumber}</p>
                           </div>
-                          <div className="flex items-center justify-between bg-gray-100 p-2 rounded-md">
-                            <span>{bankDetails?.bank_name}</span>
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              onClick={() => handleCopy(bankDetails?.bank_name)}
-                            >
-                              <Copy className="h-4 w-4" />
-                            </Button>
-                          </div>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            onClick={() => setShowDetailsModal(true)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
                         </div>
-                      )}
-                      {paymentMethod === "BTC" && (
-                        <div className="space-y-2">
-                          <h3 className="text-lg font-medium">
-                            Bitcoin Address
-                          </h3>
-                          <div className="flex items-center justify-between bg-gray-100 p-2 rounded-md">
-                            <span className="truncate">{btcAddress}</span>
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              onClick={() => handleCopy(btcAddress)}
-                            >
-                              <Copy className="h-4 w-4" />
-                            </Button>
+                        <div className="flex items-center justify-between bg-gray-100 p-2 rounded-md">
+                          <div className="overflow-hidden flex-1">
+                            <span className="text-sm font-medium">Address:</span>
+                            <p className="truncate">{userDetails.address}</p>
                           </div>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            onClick={() => setShowDetailsModal(true)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
                         </div>
-                      )}
-                      <Button
-                        className="w-full mt-4 bg-green-600 text-white hover:bg-green-500"
+                      </div>
+                    ) : (
+                      <Button 
+                        className="w-full" 
                         onClick={() => setShowDetailsModal(true)}
                       >
-                        I have made this payment
+                        Set Delivery Details
                       </Button>
-                      <Button
-                        variant="outline"
-                        className="w-full mt-2"
-                        onClick={() => setPaymentMethod(null)}
-                      >
-                        Change Payment Method
-                      </Button>
-                    </div>
-                  ) : (
+                    )}
+                  </div>
+
+                  {/* Payment Method Section - Only shown if user details are set */}
+                  {hasUserDetails && (
                     <div>
-                      <h3 className="text-lg font-medium">
-                        Choose Payment Method
-                      </h3>
-                      <RadioGroup
-                        onValueChange={setPaymentMethod}
-                        className="mt-2 space-y-2"
-                      >
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem
-                            value="BTC"
-                            id="btc"
-                          />
-                          <Label htmlFor="btc">Bitcoin (BTC)</Label>
+                      {paymentMethod ? (
+                        <div>
+                          {paymentMethod === "Bank Transfer" && (
+                            <div className="space-y-2">
+                              <h3 className="text-lg font-medium">Bank Details</h3>
+                              <div className="flex items-center justify-between bg-gray-100 p-2 rounded-md">
+                                <span>{bankDetails?.account_number}</span>
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  onClick={() =>
+                                    handleCopy(bankDetails.account_number)
+                                  }
+                                >
+                                  <Copy className="h-4 w-4" />
+                                </Button>
+                              </div>
+                              <div className="flex items-center justify-between bg-gray-100 p-2 rounded-md">
+                                <span>{bankDetails?.bank_name}</span>
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  onClick={() => handleCopy(bankDetails?.bank_name)}
+                                >
+                                  <Copy className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </div>
+                          )}
+                          {paymentMethod === "BTC" && (
+                            <div className="space-y-2">
+                              <h3 className="text-lg font-medium">
+                                Bitcoin Address
+                              </h3>
+                              <div className="flex items-center justify-between bg-gray-100 p-2 rounded-md">
+                                <span className="truncate">{btcAddress}</span>
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  onClick={() => handleCopy(btcAddress)}
+                                >
+                                  <Copy className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </div>
+                          )}
+                          <Button
+                            className="w-full mt-4 bg-green-600 text-white hover:bg-green-500"
+                            onClick={handleOrderSubmit}
+                            disabled={isSubmitting}
+                          >
+                            {isSubmitting ? "Processing..." : "I have made this payment"}
+                          </Button>
+                          <Button
+                            variant="outline"
+                            className="w-full mt-2"
+                            onClick={() => setPaymentMethod(null)}
+                          >
+                            Change Payment Method
+                          </Button>
                         </div>
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem
-                            value="Bank Transfer"
-                            id="bank"
-                          />
-                          <Label htmlFor="bank">Bank Transfer</Label>
+                      ) : (
+                        <div>
+                          <h3 className="text-lg font-medium">
+                            Choose Payment Method
+                          </h3>
+                          <RadioGroup
+                            onValueChange={setPaymentMethod}
+                            className="mt-2 space-y-2"
+                          >
+                            <div className="flex items-center space-x-2">
+                              <RadioGroupItem
+                                value="BTC"
+                                id="btc"
+                              />
+                              <Label htmlFor="btc">Bitcoin (BTC)</Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <RadioGroupItem
+                                value="Bank Transfer"
+                                id="bank"
+                              />
+                              <Label htmlFor="bank">Bank Transfer</Label>
+                            </div>
+                          </RadioGroup>
                         </div>
-                      </RadioGroup>
+                      )}
                     </div>
                   )}
                 </div>
@@ -305,7 +392,7 @@ export const Cart = () => {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Complete Your Order</DialogTitle>
+            <DialogTitle>Delivery Details</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
@@ -340,13 +427,11 @@ export const Cart = () => {
             <Button
               className="w-full"
               onClick={handleUserDetailsSubmit}
-              disabled={isSubmitting}
             >
-              {isSubmitting ? "Sending..." : "Confirm Order"}
+              Save Details
             </Button>
           </div>
         </DialogContent>
       </Dialog>
     </>
-  );
-};
+  )}
