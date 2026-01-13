@@ -149,10 +149,10 @@ export const Cart = () => {
     <Toaster />
       <Sheet open={isCartOpen} onOpenChange={setIsCartOpen}>
         <SheetTrigger asChild>
-          <button 
-            className="fixed bottom-8 right-8 flex h-16 w-16 items-center justify-center rounded-full bg-gray-900 text-white shadow-lg transition-transform hover:scale-105"
-            onClick={() => setIsCartOpen(true)}
-          >
+       <button 
+  className="fixed bottom-8 right-8 flex h-16 w-16 items-center justify-center rounded-full bg-gray-900 text-white shadow-lg transition-transform hover:scale-105 z-50" // ← Add z-50
+  onClick={() => setIsCartOpen(true)}
+>
             <div className="relative">
               <svg
                 className="h-6 w-6"
