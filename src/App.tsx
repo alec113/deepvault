@@ -6,8 +6,8 @@ import { ProductCard } from "./components/ProductCard";
 import { Cart } from "./components/Cart";
 import { toast } from "sonner";
 
-const BIN_ID = "67b0a7d1ad19ca34f804be59";
-const API_KEY = "$2a$10$LoUE3DG23v0idSgqUwPW2ezaM2GPu/HLJAnxJAxZeua0QbYLu54wK";
+const BIN_ID = "69675f9aae596e708fdb8bee";
+const API_KEY = "$2a$10$EBDlGxgerjk9HA9nUaHtceyXT8OF8YJIl4sBsWAInkXs7Zu5mYgie";
 
 const Index = () => {
   const [products, setProducts] = useState([]);
