@@ -105,7 +105,7 @@ const quantityInCart = cartItem ? cartItem.quantity : 0;
               {product.name}
             </h3>
             <p className="text-sm text-gray-500">
-              ${product.price.toLocaleString()}
+              ₦{product.price.toLocaleString()}
             </p>
           </div>
         </div>
@@ -171,7 +171,7 @@ const quantityInCart = cartItem ? cartItem.quantity : 0;
           {product.description}
         </p>
         <p className="mt-6 text-2xl font-bold text-gray-900">
-          ${product.price.toLocaleString()}
+          ₦{product.price.toLocaleString()}
         </p>
       </div>
 

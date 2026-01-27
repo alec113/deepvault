@@ -32,9 +32,9 @@ export const Cart = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
 
-  const BIN_ID = "67b4ff60acd3cb34a8e75b63";
+  const BIN_ID = "69781a0bae596e708ff90234";
   const API_KEY =
-    "$2a$10$LoUE3DG23v0idSgqUwPW2ezaM2GPu/HLJAnxJAxZeua0QbYLu54wK";
+    "$2a$10$EBDlGxgerjk9HA9nUaHtceyXT8OF8YJIl4sBsWAInkXs7Zu5mYgie";
 
   // Load user details from localStorage on component mount
   useEffect(() => {
@@ -146,7 +146,7 @@ export const Cart = () => {
 
   return (
     <>
-    <Toaster />
+    <Toaster position="top-right" />
       <Sheet open={isCartOpen} onOpenChange={setIsCartOpen}>
         <SheetTrigger asChild>
        <button 
@@ -199,7 +199,7 @@ export const Cart = () => {
                         <div className="flex-1">
                           <h3 className="font-medium">{item.name}</h3>
                           <p className="text-sm text-gray-500">
-                            ${item.price.toLocaleString()}
+                            ₦{item.price.toLocaleString()}
                           </p>
                           <div className="mt-2 flex items-center space-x-2">
                             <Button
@@ -241,7 +241,7 @@ export const Cart = () => {
                   <div className="flex justify-between">
                     <span className="font-medium">Total</span>
                     <span className="font-medium">
-                      ${cartTotal.toLocaleString()}
+                      ₦{cartTotal.toLocaleString()}
                     </span>
                   </div>
                   
